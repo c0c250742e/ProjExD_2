@@ -17,7 +17,7 @@ def gameover(screen: pg.Surface) -> None:
     # 1. 黒い矩形用のSurface（画面サイズと同じ）を作り、黒で塗りつぶす
     bo_img = pg.Surface((WIDTH, HEIGHT))
     bo_img.fill((0, 0, 0))
-    bo_img.set_alpha(150)  # 2. 半透明にする（0〜255）
+    bo_img.set_alpha(150)  # 2. 半透明にする
 
     # 3.Game Overのフォント
     font = pg.font.Font(None, 80)
@@ -43,6 +43,7 @@ def init_bb_imgs() -> tuple[list[pg.Surface], list[int]]:
     
     """
     サイズ違いの爆弾Surfaceのリストと、加速度倍率のリストを返す関数
+    戻り値:爆弾Surfaceのリスト, 加速度倍率のリスト
     """
 
     bb_imgs = []
