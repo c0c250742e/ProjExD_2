@@ -58,7 +58,26 @@ def main():
             if key_lst[key]:
                 sum_mv[0] += tpl[0]
                 sum_mv[1] += tpl[1]
-        kk_rct.move_ip(sum_mv)
+
+        # 【練習3：こうかとんが画面外に出ないようにする】
+        if check_bound(kk_rct) != (True, True):
+            kk_rct.move_ip(-sum_mv[0], -sum_mv[1])  # 動く前の位置に戻す
+
+        # === 【練習2・3：爆弾の移動と壁反射】 ===
+        bb_rct.move_ip(vx, vy)  # 爆弾を移動させる
+        yoko, tate = check_bound(bb_rct)
+        if not yoko:  # 横方向に出そうになったら
+            vx *= -1  # 横の移動速度を反転
+        if not tate:  # 縦方向に出そうになったら
+            vy *= -1  # 縦の移動速度を反転
+        screen.blit(bb_img, bb_rct)  # 爆弾を画面に描画
+        # ======================================
+
+        # === 【練習4：こうかとんと爆弾の衝突判定】 ===
+        if kk_rct.colliderect(bb_rct):
+            return  # 衝突したらmain関数を終了（ゲームオーバー）
+        # ==========================================
+        
         screen.blit(kk_img, kk_rct)
         pg.display.update()
         tmr += 1
