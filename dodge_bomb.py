@@ -40,7 +40,9 @@ def gameover(screen: pg.Surface) -> None:
 
 def init_bb_imgs() -> tuple[list[pg.Surface], list[int]]:
     
-    # サイズ違いの爆弾Surfaceのリストと、加速度倍率のリストを返す関数
+    """
+    サイズ違いの爆弾Surfaceのリストと、加速度倍率のリストを返す関数
+    """
 
     bb_imgs = []
     bb_accs = [a for a in range(1, 11)]
@@ -66,6 +68,30 @@ def check_bound(obj_rct: pg.Rect) -> tuple[bool, bool]:
         tate = False
     return yoko, tate
 
+def get_kk_imgs() -> dict[tuple[int, int], pg.Surface]:
+    """
+    移動量のタプルと対応するこうかとん画像Surfaceの辞書を返す関数
+    戻り値: {(横移動量, 縦移動量): 画像Surface}
+    """
+    # ベースのこうかとん画像（3.png）
+    base_img = pg.image.load("fig/3.png")
+
+    # 反転させて「右向き」を基準にする
+    right_img = pg.transform.flip(base_img, True, False)
+
+    kk_dict = {
+        (0, 0): pg.transform.rotozoom(base_img, 0, 0.9),       # スタート
+        (-5, 0): pg.transform.rotozoom(base_img, 0, 0.9),      # 左
+        (-5, -5): pg.transform.rotozoom(base_img, -45, 0.9),   # 左上
+        (0, -5): pg.transform.rotozoom(right_img, 90, 0.9),    # 上
+        (+5, -5): pg.transform.rotozoom(right_img, 45, 0.9),   # 右上
+        (+5, 0): pg.transform.rotozoom(right_img, 0, 0.9),     # 右
+        (+5, +5): pg.transform.rotozoom(right_img, -45, 0.9),  # 右下
+        (0, +5): pg.transform.rotozoom(right_img, -90, 0.9),   # 下
+        (-5, +5): pg.transform.rotozoom(base_img, 45, 0.9),    # 左下
+    }
+    return kk_dict
+
 def main():
     pg.display.set_caption("逃げろ！こうかとん")
     screen = pg.display.set_mode((WIDTH, HEIGHT))
@@ -86,6 +112,8 @@ def main():
     bb_rct = bb_img.get_rect()
     bb_rct.center = random.randint(0, WIDTH), random.randint(0, HEIGHT)
     vx, vy = +5, +5
+
+    kk_imgs = get_kk_imgs()
 
     clock = pg.time.Clock()
     tmr = 0
@@ -113,6 +141,9 @@ def main():
         avx = vx * bb_accs[min(tmr // 500, 9)]
         avy = vy * bb_accs[min(tmr // 500, 9)]
         bb_img = bb_imgs[min(tmr // 500, 9)]
+
+        # 飛ぶ方向に従って画像を切り替える
+        kk_img = kk_imgs[tuple(sum_mv)]
 
         # widthとheightの更新
         bb_rct.width = bb_img.get_rect().width
