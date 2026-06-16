@@ -1,11 +1,42 @@
 import os
 import sys
 import random
+import time
 import pygame as pg
 
 
 WIDTH, HEIGHT = 1100, 650
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
+
+def gameover(screen: pg.Surface) -> None:
+    """
+    ゲームオーバー画面を表示する関数
+    引数 screen: 描画対象のスクリーンSurface
+    """
+    # 1. 黒い矩形用のSurface（画面サイズと同じ）を作り、黒で塗りつぶす
+    bo_img = pg.Surface((WIDTH, HEIGHT))
+    bo_img.fill((0, 0, 0))
+    bo_img.set_alpha(150)  # 2. 半透明にする（0〜255）
+
+    # 3. 「Game Over」のフォントSurfaceを作成
+    font = pg.font.Font(None, 80)
+    txt_surf = font.render("Game Over", True, (255, 255, 255))
+    txt_rect = txt_surf.get_rect(center=(WIDTH // 2, HEIGHT // 2))
+
+    # 4. 泣いているこうかとん（例: 8.png）をロード
+    cry_kk_img = pg.image.load("fig/8.png")
+    cry_kk_rect1 = cry_kk_img.get_rect(center=(WIDTH // 2 - 200, HEIGHT // 2))
+    cry_kk_rect2 = cry_kk_img.get_rect(center=(WIDTH // 2 + 200, HEIGHT // 2))
+
+    # 5. 各Surfaceを黒背景の上にblit（貼り付け）
+    bo_img.blit(txt_surf, txt_rect)
+    bo_img.blit(cry_kk_img, cry_kk_rect1)
+    bo_img.blit(cry_kk_img, cry_kk_rect2)
+
+    # 6. メイン画面に貼り付けて更新し、5秒待機
+    screen.blit(bo_img, [0, 0])
+    pg.display.update()
+    time.sleep(5)
 
 def check_bound(obj_rct: pg.Rect) -> tuple[bool, bool]:
     """
@@ -77,6 +108,7 @@ def main():
 
         # === 【練習4：こうかとんと爆弾の衝突判定】 ===
         if kk_rct.colliderect(bb_rct):
+            gameover(screen)
             return  # 衝突したらmain関数を終了（ゲームオーバー）
         # ==========================================
 
