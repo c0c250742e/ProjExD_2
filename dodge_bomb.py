@@ -58,6 +58,8 @@ def main():
             if key_lst[key]:
                 sum_mv[0] += tpl[0]
                 sum_mv[1] += tpl[1]
+        
+        kk_rct.move_ip(sum_mv)
 
         # 【練習3：こうかとんが画面外に出ないようにする】
         if check_bound(kk_rct) != (True, True):
@@ -77,7 +79,7 @@ def main():
         if kk_rct.colliderect(bb_rct):
             return  # 衝突したらmain関数を終了（ゲームオーバー）
         # ==========================================
-        
+
         screen.blit(kk_img, kk_rct)
         pg.display.update()
         tmr += 1
