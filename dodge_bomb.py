@@ -1,4 +1,5 @@
 import os
+import math
 import sys
 import random
 import time
@@ -92,6 +93,32 @@ def get_kk_imgs() -> dict[tuple[int, int], pg.Surface]:
     }
     return kk_dict
 
+def calc_orientation(org: pg.Rect, dst: pg.Rect, current_xy: tuple[float, float]) -> tuple[float, float]:
+    """
+    爆弾からこうかとんの方向を計算する
+    引数 org: 爆弾
+    引数 dst: こうかとん
+    引数 current_xy: 計算前のベクトル(vx, vy)
+    戻り値: 新しいベクトル(vx, vy)
+    """
+    # 1. 差を求める
+    dx = dst.centerx - org.centerx
+    dy = dst.centery - org.centery
+
+    # 2. 差の距離を計算する
+    distance = math.sqrt(dx**2 + dy**2)
+
+    # 3. 距離が300未満だったら、計算前の方向をそのまま返す
+    if distance < 300:
+        return current_xy
+
+    # 4. 資料の指示：一瞬で追いつかないようにする
+    norm_target = math.sqrt(50)
+    vx = (dx / distance) * norm_target
+    vy = (dy / distance) * norm_target
+
+    return vx, vy
+
 def main():
     pg.display.set_caption("逃げろ！こうかとん")
     screen = pg.display.set_mode((WIDTH, HEIGHT))
@@ -136,6 +163,8 @@ def main():
         # 【練習3：こうかとんが画面外に出ないようにする】
         if check_bound(kk_rct) != (True, True):
             kk_rct.move_ip(-sum_mv[0], -sum_mv[1])  # 動く前の位置に戻す
+
+        vx, vy = calc_orientation(bb_rct, kk_rct, (vx, vy))
 
         # === 【練習2・3：爆弾の移動と壁反射】 ===
         avx = vx * bb_accs[min(tmr // 500, 9)]
