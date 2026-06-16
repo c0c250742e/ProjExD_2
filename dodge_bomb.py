@@ -18,25 +18,40 @@ def gameover(screen: pg.Surface) -> None:
     bo_img.fill((0, 0, 0))
     bo_img.set_alpha(150)  # 2. 半透明にする（0〜255）
 
-    # 3. 「Game Over」のフォントSurfaceを作成
+    # 3.Game Overのフォント
     font = pg.font.Font(None, 80)
     txt_surf = font.render("Game Over", True, (255, 255, 255))
     txt_rect = txt_surf.get_rect(center=(WIDTH // 2, HEIGHT // 2))
 
-    # 4. 泣いているこうかとん（例: 8.png）をロード
+    # 4.泣いているこうかとん
     cry_kk_img = pg.image.load("fig/8.png")
     cry_kk_rect1 = cry_kk_img.get_rect(center=(WIDTH // 2 - 200, HEIGHT // 2))
     cry_kk_rect2 = cry_kk_img.get_rect(center=(WIDTH // 2 + 200, HEIGHT // 2))
 
-    # 5. 各Surfaceを黒背景の上にblit（貼り付け）
+    # 5.Surfaceにblit
     bo_img.blit(txt_surf, txt_rect)
     bo_img.blit(cry_kk_img, cry_kk_rect1)
     bo_img.blit(cry_kk_img, cry_kk_rect2)
 
-    # 6. メイン画面に貼り付けて更新し、5秒待機
+    # 6.5秒待機
     screen.blit(bo_img, [0, 0])
     pg.display.update()
     time.sleep(5)
+
+def init_bb_imgs() -> tuple[list[pg.Surface], list[int]]:
+    
+    # サイズ違いの爆弾Surfaceのリストと、加速度倍率のリストを返す関数
+
+    bb_imgs = []
+    bb_accs = [a for a in range(1, 11)]
+
+    for r in range(1, 11):
+        bb_img = pg.Surface((20 * r, 20 * r))
+        bb_img.set_colorkey((0, 0, 0))
+        pg.draw.circle(bb_img, (255, 0, 0), (10 * r, 10 * r), 10 * r)
+        bb_imgs.append(bb_img)
+
+    return bb_imgs, bb_accs
 
 def check_bound(obj_rct: pg.Rect) -> tuple[bool, bool]:
     """
@@ -65,18 +80,16 @@ def main():
         pg.K_LEFT: (-5, 0),
         pg.K_RIGHT: (+5, 0),
     }
-    
-    # === 【練習2：爆弾の作成】 ===
-    bb_img = pg.Surface((20, 20))            # 20x20の空のSurfaceを作成
-    bb_img.set_colorkey((0, 0, 0))           # 黒い部分を透明にする
-    pg.draw.circle(bb_img, (255, 0, 0), (10, 10), 10)  # 赤い円を描く
-    bb_rct = bb_img.get_rect()               # 爆弾のRectを取得
-    bb_rct.center = random.randint(0, WIDTH), random.randint(0, HEIGHT)  # 初期位置をランダムに
-    vx, vy = +5, +5                          # 爆弾の移動速度
-    # ============================
+
+    bb_imgs, bb_accs = init_bb_imgs()
+    bb_img = bb_imgs[0]  # 最初は1番小さな爆弾
+    bb_rct = bb_img.get_rect()
+    bb_rct.center = random.randint(0, WIDTH), random.randint(0, HEIGHT)
+    vx, vy = +5, +5
 
     clock = pg.time.Clock()
     tmr = 0
+
     while True:
         for event in pg.event.get():
             if event.type == pg.QUIT: 
@@ -97,7 +110,14 @@ def main():
             kk_rct.move_ip(-sum_mv[0], -sum_mv[1])  # 動く前の位置に戻す
 
         # === 【練習2・3：爆弾の移動と壁反射】 ===
-        bb_rct.move_ip(vx, vy)  # 爆弾を移動させる
+        avx = vx * bb_accs[min(tmr // 500, 9)]
+        avy = vy * bb_accs[min(tmr // 500, 9)]
+        bb_img = bb_imgs[min(tmr // 500, 9)]
+
+        # widthとheightの更新
+        bb_rct.width = bb_img.get_rect().width
+        bb_rct.height = bb_img.get_rect().height
+        bb_rct.move_ip(avx, avy)
         yoko, tate = check_bound(bb_rct)
         if not yoko:  # 横方向に出そうになったら
             vx *= -1  # 横の移動速度を反転
